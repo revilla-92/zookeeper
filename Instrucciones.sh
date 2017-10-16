@@ -1,27 +1,32 @@
+#!/bin/bash
+# Creando los directorios de trabajo.
 mkdir /tmp/CNVR
 mkdir /tmp/CNVR/z1
 mkdir /tmp/CNVR/z2
 mkdir /tmp/CNVR/z3
 
+# Clonamos el proyecto de GitHub donde tenemos guardado los ficheros necesarios para la configuracion.
 cd /tmp/CNVR
 git clone https://github.com/revilla-92/zookeeper.git
 
+# Descomprimimos zookeeper
 cd zookeeper
 tar xvf zookeeper-3.4.10.tar.gz
 
+# Movemos lo anteriormente descargado donde corresponde en los directorio de trabajo.
 mv zookeeper-3.4.10 /tmp/CNVR
 mv localhost_zoo1.cfg /tmp/CNVR/zookeeper-3.4.10/conf
 mv localhost_zoo2.cfg /tmp/CNVR/zookeeper-3.4.10/conf
 mv localhost_zoo3.cfg /tmp/CNVR/zookeeper-3.4.10/conf
 
+# Eliminamos el proyecto clonado
 cd ..
 rm -rf zookeeper
 
+# Creamos el fichero myid
 echo 1 > z1/myid
 echo 2 > z2/myid
 echo 3 > z3/myid
-
-cd zookeeper-3.4.10
 
 export CLASSPATH=$CLASSPATH:/tmp/CNVR/zookeeper-3.4.10/zookeeper-3.4.10.jar
 export CLASSPATH=$CLASSPATH:/tmp/CNVR/zookeeper-3.4.10/lib/*
@@ -29,6 +34,9 @@ export CLASSPATH=$CLASSPATH:/tmp/CNVR/zookeeper-3.4.10/lib/*
 ln -sf /opt/Oracle/jdk1.8 java_home
 
 chmod 711 /tmp/CNVR/zookeeper-3.4.10/bin/*.sh
+
+# Movemos el directorio a zookeeper para a continuacion ejecutar los comandos que vienen comentados
+cd zookeeper-3.4.10
 
 # En tres terminales distintas ejecutar los comandos:
 # bin/zkServer.sh start conf/localhost_zoo1.cfg 
