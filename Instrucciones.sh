@@ -1,4 +1,3 @@
-#!/bin/bash
 # Creando los directorios de trabajo.
 mkdir /tmp/CNVR
 mkdir /tmp/CNVR/z1
@@ -28,25 +27,23 @@ echo 1 > z1/myid
 echo 2 > z2/myid
 echo 3 > z3/myid
 
+# Exportar variables de entorno
 export CLASSPATH=$CLASSPATH:/tmp/CNVR/zookeeper-3.4.10/zookeeper-3.4.10.jar
 export CLASSPATH=$CLASSPATH:/tmp/CNVR/zookeeper-3.4.10/lib/*
 
+# Crear acceso directo a Java si no existe (útil en los ordenadores del alboratorio)
 ln -sf /opt/Oracle/jdk1.8 java_home
 
+# Cambiar permisos a los shell scripts de Zookeeper
 chmod 711 /tmp/CNVR/zookeeper-3.4.10/bin/*.sh
 
 # Movemos el directorio a zookeeper para a continuacion ejecutar los comandos que vienen comentados
 cd zookeeper-3.4.10
 
-# En tres terminales distintas ejecutar los comandos:
-# bin/zkServer.sh start conf/localhost_zoo1.cfg 
-# bin/zkServer.sh start conf/localhost_zoo2.cfg
-# bin/zkServer.sh start conf/localhost_zoo3.cfg 
-
-# Con sus respectivos status:
-# bin/zkServer.sh status conf/localhost_zoo1.cfg 
-# bin/zkServer.sh status conf/localhost_zoo2.cfg
-# bin/zkServer.sh status conf/localhost_zoo3.cfg 
+# Ejecutar Zookeeper en tres terminales distintas, y ver el estado
+xterm -hold -e "bin/zkServer.sh start conf/localhost_zoo1.cfg && bin/zkServer.sh status conf/localhost_zoo1.cfg " &
+xterm -hold -e "bin/zkServer.sh start conf/localhost_zoo2.cfg && bin/zkServer.sh status conf/localhost_zoo2.cfg" &
+xterm -hold -e "bin/zkServer.sh start conf/localhost_zoo3.cfg && bin/zkServer.sh status conf/localhost_zoo3.cfg" &
 
 # Con sus respectivos CLI (Command Line Interface):
 # bin/zkCli.sh -server localhost:2181
