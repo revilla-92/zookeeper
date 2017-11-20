@@ -118,7 +118,6 @@ public class AccountDB implements Serializable{
 		
 	    FileOutputStream fos;
 		try {
-			logDebug("fos = new FileOutputStream(dumpFile);");
 			fos = new FileOutputStream(dumpFile);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 	        oos.writeObject(accountDB);
@@ -166,12 +165,6 @@ public class AccountDB implements Serializable{
 			return false;
 		}
 		return true;
-	}
-	
-	public void logDebug(String msg) {
-		System.out.println("=============================================================");
-		System.out.println(msg);
-		System.out.println("=============================================================");
 	}
 
 }

@@ -145,7 +145,7 @@ public class Bank implements Watcher {
 				}
 				
 				// Imprimimos valor de la variable boolean.
-				logDebug("Este proceso es el lider " + isLeader);
+				Logger.debug("Este proceso es el lider " + isLeader);
 				
 				// Recogemos los nodos creados en la DB por si tenemos que cargas las DBs.
 				List<String> dbs = zk.getChildren(rootDB, false);
@@ -157,21 +157,21 @@ public class Bank implements Watcher {
 					// Recojo el ultimo dump realizado.
 					String pathDB = dbs.get(dbs.size() -1);
 					
-					logDebug("El path del nodo que contiene las DBs es: " + rootDB + "/" + pathDB);
+					Logger.debug("El path del nodo que contiene las DBs es: " + rootDB + "/" + pathDB);
 					
 					Stat f = zk.exists(rootDB + "/" + pathDB, false);
 					byte[] data = zk.getData(rootDB + "/" + pathDB, false, f);
 					String DBs = SerializationUtils.deserialize(data);
 					
 					String[] pathsDBs = DBs.split(":");
-					logDebug("El path de accountDB es: " + pathsDBs[0] + " y el path de clientDB es: " + pathsDBs[1]);
+					Logger.debug("El path de accountDB es: " + pathsDBs[0] + " y el path de clientDB es: " + pathsDBs[1]);
 					
 					if(pathsDBs[0] != null || pathsDBs[0].length() > 0 || pathsDBs[0] != "null") {
-						logDebug("Copiando backup de accountDB en " + pathsDBs[0]);
+						Logger.debug("Copiando backup de accountDB en " + pathsDBs[0]);
 						accountDB.loadDB(pathsDBs[0]);
 					}
 					if(pathsDBs[1] != null || pathsDBs[1].length() > 0 || pathsDBs[1] != "null") {
-						logDebug("Copiando backup de clientDB en " + pathsDBs[1]);
+						Logger.debug("Copiando backup de clientDB en " + pathsDBs[1]);
 						clientDB.loadDB(pathsDBs[1]);
 					}
 				}
@@ -197,7 +197,7 @@ public class Bank implements Watcher {
 			if (leaderPath.compareTo(s) > 0)
 				leaderPath = s;
 		}
-		logDebug("El nodo/proceso lider es: " + rootMembers + "/" + leaderPath);
+		Logger.debug("El nodo/proceso lider es: " + rootMembers + "/" + leaderPath);
 		for (int i = 0; i < list.size(); i++) {
 			if (list.get(i).equals(leaderPath)) {
 				list.set(i, list.get(i) + " (lider)");
@@ -258,7 +258,7 @@ public class Bank implements Watcher {
 				}
 				
 				// Traza para ver los valores de las variables.
-				logDebug("El valor de sizeReached es: " + sizeReached + "\n"
+				Logger.debug("El valor de sizeReached es: " + sizeReached + "\n"
 						+ "El valor de list.size() es: " + list.size() + "\n" 
 						+ "El valor de isLeader es: " + myId.equals(leaderPath));
 				
@@ -292,11 +292,11 @@ public class Bank implements Watcher {
 
 			try {
 			
-				logDebug("Se han producido cambios en el nodo " + bankMove);
+				Logger.debug("Se han producido cambios en el nodo " + bankMove);
 
 				List<String> list = zk.getChildren(bankMove, watcherBankMove);
 				
-				logDebug("La lista de getChildren, ¿esta vacia? " + list.isEmpty() +". Y procedemos a ordenarla.");
+				Logger.debug("La lista de getChildren, ¿esta vacia? " + list.isEmpty() +". Y procedemos a ordenarla.");
 				
 				java.util.Collections.sort(list);
 
@@ -304,22 +304,22 @@ public class Bank implements Watcher {
 					
 					String pathToProcess = list.get(list.size()-1);
 
-					logDebug("Vamos a procesar el proceso: " + pathToProcess + ".");
+					Logger.debug("Vamos a procesar el proceso: " + pathToProcess + ".");
 					
 					Stat s = zk.exists(bankMove + "/" + pathToProcess, false);
 					byte[] data = zk.getData(bankMove + "/" + pathToProcess, false, s);
 					BankMove move = SerializationUtils.deserialize(data);
 					
-					logDebug("El movimiento que se va a procesar tiene los siguientes valores: " + move.toString());
+					Logger.debug("El movimiento que se va a procesar tiene los siguientes valores: " + move.toString());
 					
 					switch (move.getOperation()){
 					
 						case CREATE_CLIENT:
-							logDebug("El evento " + pathToProcess + " es una operacion de crear client.");
+							Logger.debug("El evento " + pathToProcess + " es una operacion de crear client.");
 							Client clientToCreate = new Client(move.getName(), move.getDNI());
-							logDebug("El cliente que se va a añadir a la BBDD es: " + clientToCreate.toString());
+							Logger.debug("El cliente que se va a añadir a la BBDD es: " + clientToCreate.toString());
 							clientDB.createClient(clientToCreate);
-							if(isLeader) {
+							if(myId.equals(leaderPath)) {
 								pathClientDB = clientDB.dumpDB();
 								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
 								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
@@ -327,9 +327,9 @@ public class Bank implements Watcher {
 							break;
 							
 						case UPDATE_CLIENT:
-							logDebug("El evento " + pathToProcess + " es una operacion de update client.");
+							Logger.debug("El evento " + pathToProcess + " es una operacion de update client.");
 							clientDB.updateClient(move.getClientID(), move.getName(), move.getDNI());
-							if(isLeader) {
+							if(myId.equals(leaderPath)) {
 								pathClientDB = clientDB.dumpDB();
 								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
 								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
@@ -337,10 +337,10 @@ public class Bank implements Watcher {
 							break;
 							
 						case DELETE_CLIENT:
-							logDebug("El evento " + pathToProcess + " es una operacion de delete client.");
+							Logger.debug("El evento " + pathToProcess + " es una operacion de delete client.");
 							accountDB.deleteAccountsOfClient(move.getClientID());
 							clientDB.deleteClient(move.getClientID());
-							if(isLeader) {
+							if(myId.equals(leaderPath)) {
 								pathClientDB = clientDB.dumpDB();
 								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
 								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
@@ -348,11 +348,11 @@ public class Bank implements Watcher {
 							break;
 							
 						case CREATE_ACCOUNT:
-							logDebug("El evento " + pathToProcess + " es una operacion de crear account.");
+							Logger.debug("El evento " + pathToProcess + " es una operacion de crear account.");
 							Account account = new Account(move.getIBAN(), move.getClientID(), move.getBalance());
-							logDebug("La cuenta que se va a crear es: " + account.toString());
+							Logger.debug("La cuenta que se va a crear es: " + account.toString());
 							accountDB.createAccount(account);
-							if(isLeader) {
+							if(myId.equals(leaderPath)) {
 								pathAccountDB = accountDB.dumpDB();
 								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
 								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
@@ -360,9 +360,9 @@ public class Bank implements Watcher {
 							break;
 							
 						case UPDATE_ACCOUNT:
-							logDebug("El evento " + pathToProcess + " es una operacion de update account.");
+							Logger.debug("El evento " + pathToProcess + " es una operacion de update account.");
 							accountDB.updateAccount(move.getAccountID(), move.getBalance());
-							if(isLeader) {
+							if(myId.equals(leaderPath)) {
 								pathAccountDB = accountDB.dumpDB();
 								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
 								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
@@ -370,9 +370,9 @@ public class Bank implements Watcher {
 							break;
 							
 						case DELETE_ACCOUNT:	
-							logDebug("El evento " + pathToProcess + " es una operacion de delete account.");
+							Logger.debug("El evento " + pathToProcess + " es una operacion de delete account.");
 							accountDB.deleteAccount(move.getAccountID());
-							if(isLeader) {
+							if(myId.equals(leaderPath)) {
 								pathAccountDB = accountDB.dumpDB();
 								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
 								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
@@ -398,7 +398,7 @@ public class Bank implements Watcher {
 
 	public boolean createClient(String name, String DNI) {
 
-		logDebug("Entro en createClient.");
+		Logger.debug("Entro en createClient.");
 		
 		// Recogemos la informacion del cliente a crear y creamos un movimiento bancario.
 		BankMove move = new BankMove();
@@ -413,12 +413,12 @@ public class Bank implements Watcher {
 			zk.getChildren(bankMove, watcherBankMove);
 			zk.exists(bankMove, watcherBankMove);
 			
-			logDebug("Voy a crear el nodo en /bankMoves.");
+			Logger.debug("Voy a crear el nodo en /bankMoves.");
 			
 			zk.create(bankMove + bankMoveChild, data, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 
 		} catch (KeeperException | InterruptedException e) {
-			logDebug("Error creando el cliente.");
+			Logger.debug("Error creando el cliente.");
 			e.printStackTrace();
 		}
 		return true;
@@ -432,7 +432,7 @@ public class Bank implements Watcher {
 	
 	public boolean updateClient(long clientID, String name, String DNI) {
 		
-		logDebug("Entro en updateClient.");
+		Logger.debug("Entro en updateClient.");
 		
 		// Recogemos la informacion del cliente a crear y creamos un movimiento bancario.
 		Client client = new Client(DNI, name, clientID);
@@ -447,12 +447,12 @@ public class Bank implements Watcher {
 			zk.getChildren(bankMove, watcherBankMove);
 			zk.exists(bankMove, watcherBankMove);
 			
-			logDebug("Voy a crear el nodo en /bankMoves.");
+			Logger.debug("Voy a crear el nodo en /bankMoves.");
 			
 			zk.create(bankMove + bankMoveChild, data, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 
 		} catch (KeeperException | InterruptedException e) {
-			logDebug("Error creando el cliente.");
+			Logger.debug("Error creando el cliente.");
 			e.printStackTrace();
 		}
 		return true;
@@ -461,7 +461,7 @@ public class Bank implements Watcher {
 	
 	public boolean deleteClient(Long clientID) {
 		
-		logDebug("Entro en deleteClient.");
+		Logger.debug("Entro en deleteClient.");
 
 		// Recogemos la informacion de la ID del cliente a eliminar.
 		BankMove move = new BankMove();
@@ -475,12 +475,12 @@ public class Bank implements Watcher {
 			zk.getChildren(bankMove, watcherBankMove);
 			zk.exists(bankMove, watcherBankMove);
 			
-			logDebug("Voy a crear el nodo en /bankMoves.");
+			Logger.debug("Voy a crear el nodo en /bankMoves.");
 			
 			zk.create(bankMove + bankMoveChild, data, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 
 		} catch (KeeperException | InterruptedException e) {
-			logDebug("Error creando el cliente.");
+			Logger.debug("Error creando el cliente.");
 			e.printStackTrace();
 		}
 		return true;
@@ -488,7 +488,7 @@ public class Bank implements Watcher {
 
 	public boolean createAccount(String IBAN, long idClient, double balance) {
 		
-		logDebug("Entro en createAccount.");
+		Logger.debug("Entro en createAccount.");
 		
 		// Recogemos la informacion del cliente a crear y creamos un movimiento bancario.
 		BankMove move = new BankMove();
@@ -504,12 +504,12 @@ public class Bank implements Watcher {
 			zk.getChildren(bankMove, watcherBankMove);
 			zk.exists(bankMove, watcherBankMove);
 			
-			logDebug("Voy a crear el nodo en /bankMoves.");
+			Logger.debug("Voy a crear el nodo en /bankMoves.");
 			
 			zk.create(bankMove + bankMoveChild, data, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 			
 		} catch (KeeperException | InterruptedException e) {
-			logDebug("Error creando el cliente.");
+			Logger.debug("Error creando el cliente.");
 			e.printStackTrace();
 		}
 		return true;
@@ -530,7 +530,7 @@ public class Bank implements Watcher {
 
 	public boolean updateAccount(long id, double balance) {
 		
-		logDebug("Entro en updateAccount.");
+		Logger.debug("Entro en updateAccount.");
 		
 		// Recogemos la informacion del cliente a crear y creamos un movimiento bancario.
 		BankMove move = new BankMove();
@@ -545,12 +545,12 @@ public class Bank implements Watcher {
 			zk.getChildren(bankMove, watcherBankMove);
 			zk.exists(bankMove, watcherBankMove);
 			
-			logDebug("Voy a crear el nodo en /bankMoves.");
+			Logger.debug("Voy a crear el nodo en /bankMoves.");
 			
 			zk.create(bankMove + bankMoveChild, data, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 			
 		} catch (KeeperException | InterruptedException e) {
-			logDebug("Error creando el cliente.");
+			Logger.debug("Error creando el cliente.");
 			e.printStackTrace();
 		}
 		return true;
@@ -558,7 +558,7 @@ public class Bank implements Watcher {
 
 	public boolean deleteAccount(Long accountID) {
 		
-		logDebug("Entro en deleteAccount.");
+		Logger.debug("Entro en deleteAccount.");
 
 		// Recogemos la informacion de la ID del cliente a eliminar.
 		BankMove move = new BankMove();
@@ -572,12 +572,12 @@ public class Bank implements Watcher {
 			zk.getChildren(bankMove, watcherBankMove);
 			zk.exists(bankMove, watcherBankMove);
 			
-			logDebug("Voy a crear el nodo en /bankMoves.");
+			Logger.debug("Voy a crear el nodo en /bankMoves.");
 			
 			zk.create(bankMove + bankMoveChild, data, Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 
 		} catch (KeeperException | InterruptedException e) {
-			logDebug("Error creando el cliente.");
+			Logger.debug("Error creando el cliente.");
 			e.printStackTrace();
 		}
 		return true;
@@ -594,14 +594,6 @@ public class Bank implements Watcher {
 
 	public boolean isLeader() {
 		return this.isLeader;
-	}
-	
-	public void logDebug(String msg) {
-		if (debug) {
-			System.out.println("=============================================================");
-			System.out.println(msg);
-			System.out.println("=============================================================");
-		}
 	}
 	
 	public void setSize(int size) {

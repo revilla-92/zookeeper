@@ -144,11 +144,5 @@ public class ClientDB implements Serializable {
 		}
 		return true;
 	}
-	
-	public void logDebug(String msg) {
-		System.out.println("=============================================================");
-		System.out.println(msg);
-		System.out.println("=============================================================");
-	}
 
 }
