@@ -115,16 +115,10 @@ cp pfinal.jar $WORKING_DIRECTORY
 cp localhost_zoo1.cfg $WORKING_DIRECTORY/zookeeper-3.4.10/conf
 cp localhost_zoo2.cfg $WORKING_DIRECTORY/zookeeper-3.4.10/conf
 cp localhost_zoo3.cfg $WORKING_DIRECTORY/zookeeper-3.4.10/conf
-rm -r lib
 rm -r zookeeper-3.4.10
-rm pfinal.jar
-rm localhost_zoo1.cfg
-rm localhost_zoo2.cfg
-rm localhost_zoo3.cfg
 
 # Eliminar directorio zookeeper.
 cd $WORKING_DIRECTORY
-rm -rf zookeeper
 
 # Crear archivos de descripción de los hosts en el directorio de datos.
 echo 1 > z1/myid
