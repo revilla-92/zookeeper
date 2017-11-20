@@ -113,5 +113,16 @@ cd $WORKING_DIRECTORY
 # Levantamos tantos servidores como indicados en el parametro o los de por defecto.
 for ((n=0;n<$SIZE;n++));
 do
+	# xterm -hold -e 'java -jar /tmp/CNVR/pfinal.jar --debug -size $SIZE' &
 	xterm -hold -e "java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank --debug -size $SIZE" &
 done
+
+
+
+
+
+
+
+
+
+
