@@ -36,7 +36,6 @@ public class Bank implements Watcher {
 	// Path del lider.
 	String leaderPath = new String();
 	String currentPath = new String();
-	boolean isLeader = false;
 
 	// Direcciones del conjunto de Zookeeper donde poder conectarnos.
 	String[] hosts = { "127.0.0.1:2181", "127.0.0.1:2182", "127.0.0.1:2183" };
@@ -54,7 +53,7 @@ public class Bank implements Watcher {
 	private ClientDB clientDB;
 
 	// Variable para activar/desactivar el modo debug.
-	boolean debug = false;
+	static boolean debug = false;
 	
 	// Variable para saber cuantos procesos como minimo deben de estar activos
 	boolean sizeReached = false;
@@ -75,7 +74,7 @@ public class Bank implements Watcher {
 	public Bank(boolean debug, int size) {
 
 		// Argumento --debug para habilitar las trazas mientras debugeamos.
-		this.debug = debug;
+		Bank.debug = debug;
 		this.size = size;
 		
 		if(debug) {
@@ -144,9 +143,6 @@ public class Bank implements Watcher {
 					sizeReached = true;
 				}
 				
-				// Imprimimos valor de la variable boolean.
-				Logger.debug("Este proceso es el lider " + isLeader);
-				
 				// Recogemos los nodos creados en la DB por si tenemos que cargas las DBs.
 				List<String> dbs = zk.getChildren(rootDB, false);
 				java.util.Collections.sort(dbs);
@@ -164,7 +160,8 @@ public class Bank implements Watcher {
 					String DBs = SerializationUtils.deserialize(data);
 					
 					String[] pathsDBs = DBs.split(":");
-					Logger.debug("El path de accountDB es: " + pathsDBs[0] + " y el path de clientDB es: " + pathsDBs[1]);
+					Logger.debug("El path de accountDB es: " + pathsDBs[0] + 
+							" y el path de clientDB es: " + pathsDBs[1]);
 					
 					if(pathsDBs[0] != null || pathsDBs[0].length() > 0 || pathsDBs[0] != "null") {
 						Logger.debug("Copiando backup de accountDB en " + pathsDBs[0]);
@@ -191,7 +188,6 @@ public class Bank implements Watcher {
 	 ************************************************************************/
 	
 	public List<String> eleccionLider(List<String> list) {
-		isLeader = false;
 		leaderPath = list.get(0);
 		for (String s : list) {
 			if (leaderPath.compareTo(s) > 0)
@@ -201,10 +197,8 @@ public class Bank implements Watcher {
 		for (int i = 0; i < list.size(); i++) {
 			if (list.get(i).equals(leaderPath)) {
 				list.set(i, list.get(i) + " (lider)");
-				isLeader = true;
 			} else {
 				list.set(i, list.get(i) + " (follower)");
-				isLeader = false;
 			}
 		}
 		return list;
@@ -293,11 +287,9 @@ public class Bank implements Watcher {
 			try {
 			
 				Logger.debug("Se han producido cambios en el nodo " + bankMove);
-
 				List<String> list = zk.getChildren(bankMove, watcherBankMove);
 				
 				Logger.debug("La lista de getChildren, ¿esta vacia? " + list.isEmpty() +". Y procedemos a ordenarla.");
-				
 				java.util.Collections.sort(list);
 
 				if(!list.isEmpty()) {
@@ -429,7 +421,6 @@ public class Bank implements Watcher {
 		return clientDB.readClient(ID);
 	}
 
-	
 	public boolean updateClient(long clientID, String name, String DNI) {
 		
 		Logger.debug("Entro en updateClient.");
@@ -592,10 +583,6 @@ public class Bank implements Watcher {
 	 ************************** METODOS AUXILIARES **************************
 	 ************************************************************************/
 
-	public boolean isLeader() {
-		return this.isLeader;
-	}
-	
 	public void setSize(int size) {
 		this.size = size;
 	}
