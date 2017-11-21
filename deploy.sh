@@ -8,16 +8,16 @@ set -e
 
 # Parámetro que indica el directorio en que se va a trabajar.
 WORKING_DIRECTORY=/tmp/CNVR
-# Número de terminales por defecto (1, 2 o 3)
+# Número de terminales por defecto.
 DEFAULT_SIZE=3
-# Activar o desactivar modo debug (true o false)
+# Activar o desactivar modo debug (true o false).
 DEFAULT_DEBUG=false
 
 # ======================================================================================================================================
 # Funciones
 # ======================================================================================================================================
 
-# Funcion para imprimir '=' hasta el final de la linea
+# Funcion para imprimir '=' hasta el final de la linea.
 line () {
 	for i in $(seq 1 $(stty size | cut -d' ' -f2)); do 
 		echo -n "="
@@ -25,7 +25,7 @@ line () {
 	echo ""
 }
 
-# Imprime ayuda por pantalla
+# Imprime ayuda por pantalla.
 print_help () {
 	echo "Parámetros:"
 	echo ""
@@ -59,7 +59,7 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-# Valores por defecto para las variables
+# Valores por defecto para las variables.
 if [ ${#SIZE} -lt 1 ]; then
 	SIZE=$DEFAULT_SIZE
 fi
@@ -67,7 +67,7 @@ if [ ${#DEBUG} -lt 1 ]; then
 	DEBUG=$DEFAULT_DEBUG
 fi
 
-# Variables que almacenan el contenido de las directivas a pasarle al Java
+# Variables que almacenan el contenido de las directivas a pasarle al Java.
 if $DEBUG; then
 	DEBUG_DIRECTIVE="--debug"
 	echo "Modo debug activado"
@@ -87,52 +87,54 @@ mkdir -p $WORKING_DIRECTORY/z1
 mkdir -p $WORKING_DIRECTORY/z2
 mkdir -p $WORKING_DIRECTORY/z3
 
-# Borrar bases de datos previas si existen
+# Borrar bases de datos previas si existen.
 if [ -d $WORKING_DIRECTORY/dbs ]; then
 	rm -r $WORKING_DIRECTORY/dbs
 fi
 mkdir $WORKING_DIRECTORY/dbs
 
-# Eliminar directorio de trabajo si existe
+# Si existe el repo, hacer pull; si no, clonar.
 if [ -d "$WORKING_DIRECTORY/zookeeper" ]; then
 	cd $WORKING_DIRECTORY/zookeeper && git pull
 else
-	cd $WORKING_DIRECTORY && git clone https://github.com/revilla-92/zookeeper.git && cd zookeeper
+	cd $WORKING_DIRECTORY && git clone https://github.com/revilla-92/zookeeper.git
 fi
 
-# Extraer tar.gz en el directorio zookeeper.
-tar xvf zookeeper-3.4.10.tar.gz
-
-# Modificar directorio de datos en archivos de configuración mediante sed.
-find . -wholename ./localhost_zoo1.cfg -type f -exec sed -i s#"/tmp/CNVR"#"$WORKING_DIRECTORY"#g {} +
-find . -wholename ./localhost_zoo2.cfg -type f -exec sed -i s#"/tmp/CNVR"#"$WORKING_DIRECTORY"#g {} +
-find . -wholename ./localhost_zoo3.cfg -type f -exec sed -i s#"/tmp/CNVR"#"$WORKING_DIRECTORY"#g {} +
-
-# Copiar los archivos de configuración, una vez modificados.
-cp -r lib $WORKING_DIRECTORY
-cp -r zookeeper-3.4.10 $WORKING_DIRECTORY
-cp pfinal.jar $WORKING_DIRECTORY
-cp localhost_zoo1.cfg $WORKING_DIRECTORY/zookeeper-3.4.10/conf
-cp localhost_zoo2.cfg $WORKING_DIRECTORY/zookeeper-3.4.10/conf
-cp localhost_zoo3.cfg $WORKING_DIRECTORY/zookeeper-3.4.10/conf
-rm -r zookeeper-3.4.10
-
-# Eliminar directorio zookeeper.
+# Mover al directorio de trabajo.
 cd $WORKING_DIRECTORY
 
+# Extraer tar.gz en el directorio zookeeper.
+cp ./zookeeper/zk/zookeeper-3.4.10.tar.gz .
+tar -zxvf zookeeper-3.4.10.tar.gz
+rm zookeeper-3.4.10.tar.gz
+
+# Copiar librerías al directorio de trabajo.
+cp -r ./zookeeper/lib .
+
+# Copiar JAR al directorio de trabajo.
+cp ./zookeeper/pfinal.jar .
+
+# Copiar configuración al directorio de configuración de Zookeeper.
+cp -r ./zookeeper/conf/* ./zookeeper-3.4.10/conf
+
+# Modificar directorio de datos en archivos de configuración mediante sed.
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo1.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo2.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo3.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
+
 # Crear archivos de descripción de los hosts en el directorio de datos.
-echo 1 > z1/myid
-echo 2 > z2/myid
-echo 3 > z3/myid
+echo 1 > ./z1/myid
+echo 2 > ./z2/myid
+echo 3 > ./z3/myid
 
 # Cambiar al directorio de zookeeper.
-cd zookeeper-3.4.10
+cd ./zookeeper-3.4.10
+
+# Conceder permisos de ejecución a los binarios de Zookeeper, y de escritura al usuario root.
+chmod 755 ./bin/*.sh
 
 # Exportar classpath.
 export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/*
-
-# Conceder permisos de ejecución a los binarios de Zookeeper, y de escritura al usuario root.
-chmod 755 $WORKING_DIRECTORY/zookeeper-3.4.10/bin/*.sh
 
 # ======================================================================================================================================
 # Levantar sistema distribuido
@@ -177,9 +179,10 @@ line
 # Levantar procesos
 # ======================================================================================================================================
 
-# Cambiamos al directorio donde se encuentra el programa y lo ejecutamos
+# Cambiamos al directorio donde se encuentra el programa y lo ejecutamos.
 cd $WORKING_DIRECTORY
 
+# Levantar tantas treminales como indique $SIZE.
 for((n=0;n<$SIZE;n++));
 do
 	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=$SIZE" &
