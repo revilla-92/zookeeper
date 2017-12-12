@@ -84,9 +84,6 @@ if [ ${#DEBUG} -lt 1 ]; then
 	DEBUG=$DEFAULT_DEBUG
 fi
 
-# Leer propiedades de conf/hosts.properties
-. conf/hosts.properties
-
 # Variables que almacenan el contenido de las directivas a pasarle al Java.
 if $DEBUG; then
 	DEBUG_DIRECTIVE="--debug"
@@ -113,6 +110,9 @@ if [ -d "$WORKING_DIRECTORY/zookeeper" ]; then
 else
 	cd $WORKING_DIRECTORY && git clone https://github.com/revilla-92/zookeeper.git
 fi
+
+# Leer propiedades de conf/hosts.properties
+. $WORKING_DIRECTORY/zookeeper/conf/hosts.properties
 
 # Mover al directorio de trabajo.
 cd $WORKING_DIRECTORY
@@ -186,3 +186,4 @@ for((n=0;n<3;n++));
 do
 	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &
 done
+
