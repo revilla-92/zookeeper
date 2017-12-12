@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Salir del script si alguna de las ejecuciones falla.
 set -e
 
@@ -8,8 +8,6 @@ set -e
 
 # Parámetro que indica el directorio en que se va a trabajar.
 WORKING_DIRECTORY=/tmp/CNVR
-# Número de terminales por defecto.
-DEFAULT_SIZE=3
 # Activar o desactivar modo debug (true o false).
 DEFAULT_DEBUG=false
 
@@ -29,25 +27,35 @@ line () {
 print_help () {
 	echo "Parámetros:"
 	echo ""
-	echo "   --size=n:  levanta n procesos. Por defecto: 3."
+	echo "   --id=n:    asigna ID del equipo dentro del sistema distribuido. Obligatorio."
 	echo "   --debug:   activa o desactiva el modo debug. Por defecto: desactivado."
+	echo ""
+	echo "Requisitos:"
+	echo ""
+	echo "   - Archivo conf/localhost_zoo.cfg con la configuración de cada host."
+	echo "   - Archivo conf/hosts.properties con la configuración de los tres hosts."
 	echo ""
 	echo "Ejemplos:"
 	echo ""
-	echo "   ./zookeeper.sh"
-	echo "   ./zookeeper.sh --size=4"
-	echo "   ./zookeeper.sh --size=4 --debug"
+	echo "   ./zookeeper.sh --id=1"
+	echo "   ./zookeeper.sh --id=1 --debug"
 }
 
 # ======================================================================================================================================
 # Lectura de parametros configurables
 # ======================================================================================================================================
 
+# Salir si no se pasa ningun parametro.
+if [ $# -eq 0 ]; then
+	print_help
+	exit 1
+fi
+
 # Parametros pasados por consola con nombre concreto
 while [ $# -gt 0 ]; do
 	case "$1" in
-		--size=*)
-			SIZE="${1#*=}"
+		--id=*)
+			MY_ID="${1#*=}"
 			;;
 		--debug)
 			DEBUG=true
@@ -59,33 +67,39 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-# Valores por defecto para las variables.
-if [ ${#SIZE} -lt 1 ]; then
-	SIZE=$DEFAULT_SIZE
+# Salir si no existe conf.properties.
+if [ ! -f conf/hosts.properties ]; then
+	print_help
+	exit 1
 fi
+
+# Salir si no se ha pasado como parametrio la ID del equipo dentro del sistema distribuido.
+if [ ${#MY_ID} -lt 1 ]; then
+	print_help
+	exit 1
+fi
+
+# Valores por defecto para las variables.
 if [ ${#DEBUG} -lt 1 ]; then
 	DEBUG=$DEFAULT_DEBUG
 fi
+
+# Leer propiedades de conf/hosts.properties
+. conf/hosts.properties
 
 # Variables que almacenan el contenido de las directivas a pasarle al Java.
 if $DEBUG; then
 	DEBUG_DIRECTIVE="--debug"
 	echo "Modo debug activado"
 fi
-SIZE_DIRECTIVE="--size=$SIZE"
-
-# Mensaje informativo sobre el número de servidores que se levantaran.
-echo "El numero de servidores que se levantaran es: $SIZE"
 
 # ======================================================================================================================================
 # Main
 # ======================================================================================================================================
 
-# Crear directorio de trabajo, y directorio de datos de Zookeeper para cada host.
+# Crear directorio de trabajo, y directorio de datos de Zookeeper para este host.
 mkdir -p $WORKING_DIRECTORY
 mkdir -p $WORKING_DIRECTORY/z1
-mkdir -p $WORKING_DIRECTORY/z2
-mkdir -p $WORKING_DIRECTORY/z3
 
 # Borrar bases de datos previas si existen.
 if [ -d $WORKING_DIRECTORY/dbs ]; then
@@ -118,14 +132,13 @@ cp ./zookeeper/pfinal.jar .
 cp -r ./zookeeper/conf/* ./zookeeper-3.4.10/conf
 
 # Modificar directorio de datos en archivos de configuración mediante sed.
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo1.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo2.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo3.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST1"#"$HOST1"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST2"#"$HOST2"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST3"#"$HOST3"#g {} +
 
 # Crear archivos de descripción de los hosts en el directorio de datos.
-echo 1 > ./z1/myid
-echo 2 > ./z2/myid
-echo 3 > ./z3/myid
+echo $MY_ID > ./z1/myid
 
 # Cambiar al directorio de zookeeper.
 cd ./zookeeper-3.4.10
@@ -147,32 +160,18 @@ echo " ln -sf /opt/Oracle/jdk1.8 java_home"
 
 # Arrancar los servidores que conformarán el entorno zookeeper.
 line
-echo "Arrancando el servidor 1"
-$WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh start $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo1.cfg
-line
-echo "Arrancando el servidor 2"
-$WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh start $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo2.cfg
-line
-echo "Arrancando el servidor 3"
-$WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh start $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo3.cfg
+echo "Arrancando el servidor $MY_ID"
+$WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh start $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo.cfg
 
 # Verificamos el estado de los servidores del entorno Zookeeper.
 line
-echo "El estado del servidor 1 de Zookeeper:"
-$WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh status $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo1.cfg
-line
-echo "El estado del servidor 2 de Zookeeper:"
-$WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh status $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo2.cfg
-line
-echo "El estado del servidor 3 de Zookeeper:"
-$WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh status $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo3.cfg
+echo "El estado del servidor $MY_ID de Zookeeper:"
+$WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh status $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo.cfg
 
 # Lanzar mensajes en consola con instrucciones de ejecución en varias terminales.
 line
-echo "Ejecutar los siguientes comandos para acceder a la CLI (Command Line Interface) de cada uno de los servidores del conjunto Zookeeper:"
+echo "Ejecutar los siguientes comandos para acceder a la CLI (Command Line Interface) de este servidor del conjunto Zookeeper:"
 echo " $WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkCli.sh -server localhost:2181"
-echo " $WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkCli.sh -server localhost:2182"
-echo " $WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkCli.sh -server localhost:2183"
 line
 
 # ======================================================================================================================================
@@ -182,8 +181,8 @@ line
 # Cambiamos al directorio donde se encuentra el programa y lo ejecutamos.
 cd $WORKING_DIRECTORY
 
-# Levantar tantas treminales como indique $SIZE.
-for((n=0;n<$SIZE;n++));
+# Levantar tantas treminales como indique 3.
+for((n=0;n<3;n++));
 do
-	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=$SIZE" &
+	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &
 done
