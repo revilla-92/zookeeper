@@ -67,12 +67,6 @@ while [ $# -gt 0 ]; do
 	shift
 done
 
-# Salir si no existe conf.properties.
-if [ ! -f conf/hosts.properties ]; then
-	print_help
-	exit 1
-fi
-
 # Salir si no se ha pasado como parametrio la ID del equipo dentro del sistema distribuido.
 if [ ${#MY_ID} -lt 1 ]; then
 	print_help
@@ -179,11 +173,10 @@ line
 # ======================================================================================================================================
 
 # Cambiamos al directorio donde se encuentra el programa y lo ejecutamos.
-#cd $WORKING_DIRECTORY
+cd $WORKING_DIRECTORY
 
 # Levantar tantas treminales como indique 3.
-#for((n=0;n<3;n++));
-#do
-#	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &
-#done
-
+for((n=0;n<3;n++));
+do
+	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &
+done
