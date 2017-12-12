@@ -127,9 +127,9 @@ cp -r ./zookeeper/conf/* ./zookeeper-3.4.10/conf
 
 # Modificar directorio de datos en archivos de configuración mediante sed.
 find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST1"#"$HOST1"#g {} +
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST2"#"$HOST2"#g {} +
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST3"#"$HOST3"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST1"#"$HOST1_IP"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST2"#"$HOST2_IP"#g {} +
+find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST3"#"$HOST3_IP"#g {} +
 
 # Crear archivos de descripción de los hosts en el directorio de datos.
 echo $MY_ID > ./z1/myid
@@ -142,6 +142,19 @@ chmod 755 ./bin/*.sh
 
 # Exportar classpath.
 export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/*
+
+# ======================================================================================================================================
+# Copiar claves publicas de los participantes a ~/.ssh/authorized_keys
+# ======================================================================================================================================
+
+# Eliminar antiguo authorized_keys
+if [-f ~/.ssh/authorized_keys ]; then
+	rm ~/.ssh/authorized_keys
+fi
+# Copiar authorized_keys
+cp $WORKING_DIRECTORY/zookeeper/conf/authorized_keys ~/.ssh
+# Modificar permisos de authorized_keys
+chmod 600 ~/.ssh/authorized_keys
 
 # ======================================================================================================================================
 # Levantar sistema distribuido
@@ -173,10 +186,12 @@ line
 # ======================================================================================================================================
 
 # Cambiamos al directorio donde se encuentra el programa y lo ejecutamos.
-cd $WORKING_DIRECTORY
+#cd $WORKING_DIRECTORY
 
 # Levantar tantas treminales como indique 3.
-for((n=0;n<3;n++));
-do
-	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &
-done
+#for((n=0;n<3;n++));
+#do
+#	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &
+#done
+
+
