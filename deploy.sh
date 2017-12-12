@@ -148,7 +148,7 @@ export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DI
 # ======================================================================================================================================
 
 # Eliminar antiguo authorized_keys
-if [-f ~/.ssh/authorized_keys ]; then
+if [ -f ~/.ssh/authorized_keys ]; then
 	rm ~/.ssh/authorized_keys
 fi
 # Copiar authorized_keys
