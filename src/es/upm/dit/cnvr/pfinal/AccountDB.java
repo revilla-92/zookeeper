@@ -135,32 +135,30 @@ public class AccountDB implements Serializable{
 	
 	
 	public boolean loadDB (String path, Properties currentProperties, String leaderHostname) {
-		try {
-			
-			String[] hNames = {"HOST1", "HOST2", "HOST3"};
-			
-			String leaderIP = "";
-			
-			for(int i = 0; i < hNames.length; i++) {
-				if(currentProperties.getProperty(hNames[i] + "_USER").equals(leaderHostname)){
-					leaderIP = currentProperties.getProperty(hNames[i] + "_IP");
-				}
-			}
-			
-			// Ejecutamos un comando SCP para copiar la base de datos del lider (siendo el nuevo proceso).
-			String[] orderedCommands = new String[] {
-					"scp -o StrictHostKeyChecking=no " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs"
-			};
-			
-			Logger.debug(String.join(" && ", orderedCommands));
-			
-			String[] c = new String[] {"/bin/bash", "-c", String.join(" && ", orderedCommands)};
-			
-			new ProcessBuilder(c).start();
-			
+		try {			
 			File fileAccountDB = new File(path);
 			
 			if(fileAccountDB.exists()) {
+				String[] hNames = {"HOST1", "HOST2", "HOST3"};
+				
+				String leaderIP = "";
+				
+				for(int i = 0; i < hNames.length; i++) {
+					if(currentProperties.getProperty(hNames[i] + "_USER").equals(leaderHostname)){
+						leaderIP = currentProperties.getProperty(hNames[i] + "_IP");
+					}
+				}
+				
+				// Ejecutamos un comando SCP para copiar la base de datos del lider (siendo el nuevo proceso).
+				String[] orderedCommands = new String[] {
+						"scp -o StrictHostKeyChecking=no " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs"
+				};
+				
+				Logger.debug(String.join(" && ", orderedCommands));
+				
+				String[] c = new String[] {"/bin/bash", "-c", String.join(" && ", orderedCommands)};
+				
+				new ProcessBuilder(c).start();
 				
 				FileInputStream fis = new FileInputStream(fileAccountDB);
 				
