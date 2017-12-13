@@ -164,5 +164,7 @@ line
 
 # Cambiamos al directorio donde se encuentra el programa y lo ejecutamos.
 cd $WORKING_DIRECTORY
-# Arrancamos 
-echo "xterm -hold -e \"export CLASSPATH=$CLASSPATH:$PWD/pfinal.jar:$CLASSPATH:$PWD/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3\" &"
+
+# Arrancamos
+echo "Ejecutar el siguiente comando para levantar el servidor del sistema distribuido."
+echo " xterm -hold -e \"export CLASSPATH=$CLASSPATH:$PWD/pfinal.jar:$PWD/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3\" &"
