@@ -135,10 +135,8 @@ public class AccountDB implements Serializable{
 	
 	
 	public boolean loadDB (String path, Properties currentProperties, String leaderHostname) {
-		try {			
-			File fileAccountDB = new File(path);
-			
-			if(fileAccountDB.exists()) {
+		try {
+			if(path != null) {
 				String[] hNames = {"HOST1", "HOST2", "HOST3"};
 				
 				String leaderIP = "";
@@ -160,25 +158,29 @@ public class AccountDB implements Serializable{
 				
 				new ProcessBuilder(c).start();
 				
-				FileInputStream fis = new FileInputStream(fileAccountDB);
+				File fileAccountDB = new File(path);
 				
-				ObjectInputStream ois = new ObjectInputStream(fis);
-				this.accountDB = (java.util.HashMap<Long, Account>) ois.readObject();
-				
-				Set<Entry<Long, Account>> mapValues = accountDB.entrySet();
-				int maplength = mapValues.size();
-				
-				Entry<Long, Account>[] arrayAccountDB = new Entry[maplength];
-				mapValues.toArray(arrayAccountDB);
+				if(fileAccountDB.exists()) {
+					
+					FileInputStream fis = new FileInputStream(fileAccountDB);
+					
+					ObjectInputStream ois = new ObjectInputStream(fis);
+					this.accountDB = (java.util.HashMap<Long, Account>) ois.readObject();
+					
+					Set<Entry<Long, Account>> mapValues = accountDB.entrySet();
+					int maplength = mapValues.size();
+					
+					Entry<Long, Account>[] arrayAccountDB = new Entry[maplength];
+					mapValues.toArray(arrayAccountDB);
 
-				System.out.print("Last Key:" + arrayAccountDB[maplength - 1].getKey());
-				System.out.println(" Last Value:" + arrayAccountDB[maplength - 1].getValue().toString());
-				
-				Account.setNext_id(arrayAccountDB[maplength - 1].getKey());
-				
-				ois.close();
-				fis.close();
-
+					System.out.print("Last Key:" + arrayAccountDB[maplength - 1].getKey());
+					System.out.println(" Last Value:" + arrayAccountDB[maplength - 1].getValue().toString());
+					
+					Account.setNext_id(arrayAccountDB[maplength - 1].getKey());
+					
+					ois.close();
+					fis.close();
+				}
 			}
 			
 		} catch (Exception e) {

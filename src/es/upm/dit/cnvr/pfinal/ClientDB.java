@@ -116,9 +116,7 @@ public class ClientDB implements Serializable {
 	
 	public boolean loadDB (String path, Properties currentProperties, String leaderHostname) {
 		try {
-			File fileClientDB = new File(path);
-			
-			if(fileClientDB.exists()) {
+			if(path != null) {
 				String[] hNames = {"HOST1", "HOST2", "HOST3"};
 				
 				String leaderIP = "";
@@ -140,26 +138,29 @@ public class ClientDB implements Serializable {
 				
 				new ProcessBuilder(c).start();
 				
-				FileInputStream fis = new FileInputStream(fileClientDB);
+				File fileClientDB = new File(path);
 				
-				ObjectInputStream ois = new ObjectInputStream(fis);
-				this.clientDB = (java.util.HashMap<Long, Client>) ois.readObject();
+				if(fileClientDB.exists()) {
+					FileInputStream fis = new FileInputStream(fileClientDB);
+					
+					ObjectInputStream ois = new ObjectInputStream(fis);
+					this.clientDB = (java.util.HashMap<Long, Client>) ois.readObject();
 
-				Set<Entry<Long, Client>> mapValues = clientDB.entrySet();
-				int maplength = mapValues.size();
-				
-				Entry<Long, Client>[] arrayClientDB = new Entry[maplength];
-				mapValues.toArray(arrayClientDB);
+					Set<Entry<Long, Client>> mapValues = clientDB.entrySet();
+					int maplength = mapValues.size();
+					
+					Entry<Long, Client>[] arrayClientDB = new Entry[maplength];
+					mapValues.toArray(arrayClientDB);
 
-				System.out.print("Last Key:" + arrayClientDB[maplength - 1].getKey());
-				System.out.println(" Last Value:" + arrayClientDB[maplength - 1].getValue().toString());
-				
-				Client.setNext_id(arrayClientDB[maplength - 1].getKey());
-				
-				ois.close();
-				fis.close();
+					System.out.print("Last Key:" + arrayClientDB[maplength - 1].getKey());
+					System.out.println(" Last Value:" + arrayClientDB[maplength - 1].getValue().toString());
+					
+					Client.setNext_id(arrayClientDB[maplength - 1].getKey());
+					
+					ois.close();
+					fis.close();
+				}
 			}
-			
 		} catch (Exception e) {
 			e.printStackTrace();
 			return false;

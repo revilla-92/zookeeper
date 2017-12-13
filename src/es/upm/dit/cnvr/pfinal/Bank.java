@@ -327,6 +327,8 @@ public class Bank implements Watcher {
 					
 					Logger.debug("El movimiento que se va a procesar tiene los siguientes valores: " + move.toString());
 					
+					byte[] paths = null;
+					
 					switch (move.getOperation()){
 					
 						case CREATE_CLIENT:
@@ -334,32 +336,26 @@ public class Bank implements Watcher {
 							Client clientToCreate = new Client(move.getName(), move.getDNI());
 							Logger.debug("El cliente que se va a añadir a la BBDD es: " + clientToCreate.toString());
 							clientDB.createClient(clientToCreate);
-							if(myId.equals(leaderPath)) {
-								pathClientDB = clientDB.dumpDB();
-								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
-								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
-							}
+							pathClientDB = clientDB.dumpDB();
+							paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
+							zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
 							break;
 							
 						case UPDATE_CLIENT:
 							Logger.debug("El evento " + pathToProcess + " es una operacion de update client.");
 							clientDB.updateClient(move.getClientID(), move.getName(), move.getDNI());
-							if(myId.equals(leaderPath)) {
-								pathClientDB = clientDB.dumpDB();
-								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
-								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
-							}
+							pathClientDB = clientDB.dumpDB();
+							paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
+							zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
 							break;
 							
 						case DELETE_CLIENT:
 							Logger.debug("El evento " + pathToProcess + " es una operacion de delete client.");
 							accountDB.deleteAccountsOfClient(move.getClientID());
 							clientDB.deleteClient(move.getClientID());
-							if(myId.equals(leaderPath)) {
-								pathClientDB = clientDB.dumpDB();
-								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
-								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
-							}
+							pathClientDB = clientDB.dumpDB();
+							paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
+							zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
 							break;
 							
 						case CREATE_ACCOUNT:
@@ -367,31 +363,25 @@ public class Bank implements Watcher {
 							Account account = new Account(move.getIBAN(), move.getClientID(), move.getBalance());
 							Logger.debug("La cuenta que se va a crear es: " + account.toString());
 							accountDB.createAccount(account);
-							if(myId.equals(leaderPath)) {
-								pathAccountDB = accountDB.dumpDB();
-								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
-								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
-							}
+							pathAccountDB = accountDB.dumpDB();
+							paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
+							zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
 							break;
 							
 						case UPDATE_ACCOUNT:
 							Logger.debug("El evento " + pathToProcess + " es una operacion de update account.");
 							accountDB.updateAccount(move.getAccountID(), move.getBalance());
-							if(myId.equals(leaderPath)) {
-								pathAccountDB = accountDB.dumpDB();
-								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
-								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
-							}
+							pathAccountDB = accountDB.dumpDB();
+							paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
+							zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
 							break;
 							
 						case DELETE_ACCOUNT:	
 							Logger.debug("El evento " + pathToProcess + " es una operacion de delete account.");
 							accountDB.deleteAccount(move.getAccountID());
-							if(myId.equals(leaderPath)) {
-								pathAccountDB = accountDB.dumpDB();
-								byte[] paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
-								zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
-							}
+							pathAccountDB = accountDB.dumpDB();
+							paths = SerializationUtils.serialize(pathAccountDB + ":" + pathClientDB);
+							zk.create(rootDB + db, paths, Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
 							break;
 							
 						default:
