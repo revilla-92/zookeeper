@@ -164,6 +164,7 @@ chmod 600 ~/.ssh/authorized_keys
 line
 echo "Si se ejecuta desde un PC del laboratorio ejecutar antes:"
 echo " ln -sf /opt/Oracle/jdk1.8 java_home"
+ln -sf /opt/Oracle/jdk1.8 java_home
 
 # Arrancar los servidores que conformarán el entorno zookeeper.
 line
