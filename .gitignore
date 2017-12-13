@@ -2,3 +2,4 @@ bin
 *.log
 .classpath
 .project
+zookeeper.out

@@ -119,9 +119,6 @@ echo $MY_ID > $WORKING_DIRECTORY/z1/myid
 # Conceder permisos de ejecución a los binarios de Zookeeper, y de escritura al usuario root.
 chmod 755 $WORKING_DIRECTORY/zookeeper-3.4.10/bin/*.sh
 
-# Exportar classpath.
-export CLASSPATH=$CLASSPATH:$PWD/pfinal.jar:$CLASSPATH:$PWD/lib/*
-
 # ======================================================================================================================================
 # Copiar claves publicas de los participantes a ~/.ssh/authorized_keys
 # ======================================================================================================================================
@@ -167,9 +164,5 @@ line
 
 # Cambiamos al directorio donde se encuentra el programa y lo ejecutamos.
 cd $WORKING_DIRECTORY
-
-# Exportamos el classpath para arrancar la aplicacion
-export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/*
-
 # Arrancamos 
-echo "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && xterm -hold -e "java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &"
+echo "xterm -hold -e \"export CLASSPATH=$CLASSPATH:$PWD/pfinal.jar:$CLASSPATH:$PWD/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3\" &"

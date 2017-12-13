@@ -152,6 +152,8 @@ public class AccountDB implements Serializable{
 				"scp " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs"
 			};
 			
+			Logger.debug(String.join(" && ", orderedCommands));
+			
 			String[] c = new String[] {"/bin/bash", "-c", String.join(" && ", orderedCommands)};
 			
 			new ProcessBuilder(c).start();
