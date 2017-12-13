@@ -156,12 +156,9 @@ $WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkServer.sh status $WORKING_DIRECTORY/zo
 line
 echo "Ejecutar los siguientes comandos para acceder a la CLI (Command Line Interface) de este servidor del conjunto Zookeeper:"
 echo " $WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkCli.sh -server localhost:2181"
+
+# Instrucciones para arrancar
 line
-
-# ======================================================================================================================================
-# Levantar procesos
-# ======================================================================================================================================
-
-# Arrancamos
 echo "Ejecutar el siguiente comando para levantar el servidor del sistema distribuido."
 echo " xterm -hold -e \"export CLASSPATH=\$CLASSPATH:$PWD/pfinal.jar:$PWD/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3\" &"
+line
