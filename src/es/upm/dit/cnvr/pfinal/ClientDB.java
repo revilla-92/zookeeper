@@ -127,22 +127,19 @@ public class ClientDB implements Serializable {
 					}
 				}
 				
-				// Ejecutamos un comando SCP para copiar la base de datos del lider (siendo el nuevo proceso).
-				String[] orderedCommands = new String[] {
-					"scp -o StrictHostKeyChecking=no " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs"
-				};
+				// Execute SCP
+				ExecuteShellComand obj = new ExecuteShellComand();
+				String command = "scp -o StrictHostKeyChecking=no " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs";
+				String output = obj.executeCommand(command);
+				Logger.debug("Execution of: " + command + " resulted in: " + output);
 				
-				Logger.debug(String.join(" && ", orderedCommands));
-				
-				String[] c = new String[] {"/bin/bash", "-c", String.join(" && ", orderedCommands)};
-				
-				new ProcessBuilder(c).start();
-				
+				// Comprobar que se ha copiado correctamente
 				File fileClientDB = new File(path);
 				Logger.debug(fileClientDB.toString());
+				Logger.debug("CLientDB exists?: " + fileClientDB.exists());
 				
 				if(fileClientDB.exists()) {
-					Logger.debug("ClientDB exists");
+
 					FileInputStream fis = new FileInputStream(fileClientDB);
 					
 					ObjectInputStream ois = new ObjectInputStream(fis);
