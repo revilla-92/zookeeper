@@ -8,6 +8,9 @@ import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.apache.zookeeper.Watcher;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 import java.util.Random;
 import java.util.List;
 
@@ -36,9 +39,9 @@ public class Bank implements Watcher {
 	// Path del lider.
 	String leaderPath = new String();
 	String currentPath = new String();
-
-	// Direcciones del conjunto de Zookeeper donde poder conectarnos.
-	String[] hosts = { "127.0.0.1:2181", "127.0.0.1:2182", "127.0.0.1:2183" };
+	
+	// Properties
+	private Properties currentProperties = new Properties();
 
 	// Declaramos una instancia Zookeeper para conectarnos al conjunto ZooKeeper.
 	private ZooKeeper zk;
@@ -71,7 +74,7 @@ public class Bank implements Watcher {
 	 *************************** CONFIGURACION ******************************
 	 ************************************************************************/
 	
-	public Bank(boolean debug, int size) {
+	public Bank(boolean debug, int size) throws IOException {
 
 		// Argumento --debug para habilitar las trazas mientras debugeamos.
 		Bank.debug = debug;
@@ -85,9 +88,20 @@ public class Bank implements Watcher {
 		accountDB = new AccountDB();
 		clientDB = new ClientDB();
 
+		// Leyendo IPs y nombres de usuario de los hosts del fichero properties.
+		FileInputStream propsFile = new FileInputStream("conf/hosts.properties");
+		currentProperties.load(propsFile);
+		
+		String[] hosts = {
+				currentProperties.getProperty("HOST1_IP"), 
+				currentProperties.getProperty("HOST2_IP"), 
+				currentProperties.getProperty("HOST3_IP")
+		};
+		
 		// Seleccionamos un servidor aleatorio del conjunto Zookeeper.
 		Random rand = new Random();
 		int i = rand.nextInt(hosts.length);
+		
 
 		// Creamos una sesion y esperamos hasta que se cree. Una vez creada el watcher es notificado.
 		try {
@@ -122,8 +136,10 @@ public class Bank implements Watcher {
 					zk.create(rootDB, new byte[0], Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 				}
 				
-				// Creamos un nodo dentro de /members y conseguimos su ID.
-				currentPath = zk.create(rootMembers + aMember, new byte[0], Ids.OPEN_ACL_UNSAFE,
+				// Creamos un nodo dentro de /members con informacion de su hostname conseguimos su ID.
+				String hostname = System.getProperty("user.name");
+				byte[] identifier = SerializationUtils.serialize(hostname);
+				currentPath = zk.create(rootMembers + aMember, identifier, Ids.OPEN_ACL_UNSAFE,
 						CreateMode.EPHEMERAL_SEQUENTIAL);
 
 				// Imprimimos el nodo creado.
@@ -150,6 +166,10 @@ public class Bank implements Watcher {
 				// Si no soy el proceso lider y hay bases de datos creadas, las cargo.
 				if(!myId.equals(leaderPath) && !dbs.isEmpty()) {
 					
+					// Recuperamos la información del lider
+					byte[] hostnames = zk.getData(rootMembers + "/" + leaderPath, false, s);
+					String leaderHostname = SerializationUtils.deserialize(hostnames);
+					
 					// Recojo el ultimo dump realizado.
 					String pathDB = dbs.get(dbs.size() -1);
 					
@@ -165,11 +185,11 @@ public class Bank implements Watcher {
 					
 					if(pathsDBs[0] != null || pathsDBs[0].length() > 0 || pathsDBs[0] != "null") {
 						Logger.debug("Copiando backup de accountDB en " + pathsDBs[0]);
-						accountDB.loadDB(pathsDBs[0]);
+						accountDB.loadDB(pathsDBs[0], currentProperties, leaderHostname);
 					}
 					if(pathsDBs[1] != null || pathsDBs[1].length() > 0 || pathsDBs[1] != "null") {
 						Logger.debug("Copiando backup de clientDB en " + pathsDBs[1]);
-						clientDB.loadDB(pathsDBs[1]);
+						clientDB.loadDB(pathsDBs[1], currentProperties, leaderHostname);
 					}
 				}
 
@@ -188,12 +208,15 @@ public class Bank implements Watcher {
 	 ************************************************************************/
 	
 	public List<String> eleccionLider(List<String> list) {
+		
 		leaderPath = list.get(0);
 		for (String s : list) {
 			if (leaderPath.compareTo(s) > 0)
 				leaderPath = s;
 		}
+		
 		Logger.debug("El nodo/proceso lider es: " + rootMembers + "/" + leaderPath);
+		
 		for (int i = 0; i < list.size(); i++) {
 			if (list.get(i).equals(leaderPath)) {
 				list.set(i, list.get(i) + " (lider)");

@@ -1,5 +1,6 @@
 package es.upm.dit.cnvr.pfinal;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public class MainBank {
@@ -19,7 +20,7 @@ public class MainBank {
 	    return true;
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		
 		Scanner sc      = new Scanner(System.in);
 		boolean correct = false;

@@ -166,12 +166,10 @@ line
 # ======================================================================================================================================
 
 # Cambiamos al directorio donde se encuentra el programa y lo ejecutamos.
-#cd $WORKING_DIRECTORY
+cd $WORKING_DIRECTORY
 
-# Levantar tantas treminales como indique 3.
-#for((n=0;n<3;n++));
-#do
-#	xterm -hold -e "export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &
-#done
+# Exportamos el classpath para arrancar la aplicacion
+export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/*
 
-
+# Arrancamos 
+xterm -hold -e "java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3" &
