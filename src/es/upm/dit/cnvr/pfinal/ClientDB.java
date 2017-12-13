@@ -139,8 +139,10 @@ public class ClientDB implements Serializable {
 				new ProcessBuilder(c).start();
 				
 				File fileClientDB = new File(path);
+				Logger.debug(fileClientDB.toString());
 				
 				if(fileClientDB.exists()) {
+					Logger.debug("ClientDB exists");
 					FileInputStream fis = new FileInputStream(fileClientDB);
 					
 					ObjectInputStream ois = new ObjectInputStream(fis);
@@ -151,9 +153,6 @@ public class ClientDB implements Serializable {
 					
 					Entry<Long, Client>[] arrayClientDB = new Entry[maplength];
 					mapValues.toArray(arrayClientDB);
-
-					System.out.print("Last Key:" + arrayClientDB[maplength - 1].getKey());
-					System.out.println(" Last Value:" + arrayClientDB[maplength - 1].getValue().toString());
 					
 					Client.setNext_id(arrayClientDB[maplength - 1].getKey());
 					

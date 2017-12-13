@@ -159,8 +159,11 @@ public class AccountDB implements Serializable{
 				new ProcessBuilder(c).start();
 				
 				File fileAccountDB = new File(path);
+				Logger.debug(fileAccountDB.toString());
 				
 				if(fileAccountDB.exists()) {
+					
+					Logger.debug("AccountDB exists");
 					
 					FileInputStream fis = new FileInputStream(fileAccountDB);
 					
@@ -172,9 +175,6 @@ public class AccountDB implements Serializable{
 					
 					Entry<Long, Account>[] arrayAccountDB = new Entry[maplength];
 					mapValues.toArray(arrayAccountDB);
-
-					System.out.print("Last Key:" + arrayAccountDB[maplength - 1].getKey());
-					System.out.println(" Last Value:" + arrayAccountDB[maplength - 1].getValue().toString());
 					
 					Account.setNext_id(arrayAccountDB[maplength - 1].getKey());
 					
