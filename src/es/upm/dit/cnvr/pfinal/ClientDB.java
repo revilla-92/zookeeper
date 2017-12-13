@@ -7,6 +7,7 @@ import java.io.FileInputStream;
 import java.io.Serializable;
 import java.io.IOException;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 import java.io.File;
 
@@ -113,8 +114,28 @@ public class ClientDB implements Serializable {
 	}
 	
 	
-	public boolean loadDB (String path) {
+	public boolean loadDB (String path, Properties currentProperties, String leaderHostname) {
 		try {
+			
+			String[] hNames = {"HOST1", "HOST2", "HOST3"};
+			
+			String leaderIP = "";
+			
+			for(int i = 0; i < hNames.length; i++) {
+				if(currentProperties.getProperty(hNames[i] + "_USER").equals(leaderHostname)){
+					leaderIP = currentProperties.getProperty(hNames[i] + "_IP");
+				}
+			}
+			
+			// Ejecutamos un comando SCP para copiar la base de datos del lider (siendo el nuevo proceso).
+			String[] orderedCommands = new String[] {
+				"scp " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs"
+			};
+			
+			String[] c = new String[] {"/bin/bash", "-c", String.join(" && ", orderedCommands)};
+			
+			new ProcessBuilder(c).start();
+			
 			File fileClientDB = new File(path);
 			
 			if(fileClientDB.exists()) {
