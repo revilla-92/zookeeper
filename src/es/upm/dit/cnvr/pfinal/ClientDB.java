@@ -129,7 +129,7 @@ public class ClientDB implements Serializable {
 			
 			// Ejecutamos un comando SCP para copiar la base de datos del lider (siendo el nuevo proceso).
 			String[] orderedCommands = new String[] {
-				"scp " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs"
+				"scp -o StrictHostKeyChecking=no " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs"
 			};
 			
 			Logger.debug(String.join(" && ", orderedCommands));
