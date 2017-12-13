@@ -15,7 +15,7 @@ DEFAULT_DEBUG=false
 # Funciones
 # ======================================================================================================================================
 
-# Funcion para imprimir '=' hasta el final de la linea.
+# Imprimir '=' hasta el final de la linea.
 line () {
 	for i in $(seq 1 $(stty size | cut -d' ' -f2)); do 
 		echo -n "="
@@ -41,15 +41,15 @@ print_help () {
 	echo "   ./zookeeper.sh --id=1 --debug"
 }
 
+# Sale del script con un codigo de error y un mensaje en consola.
+err () {
+	print_help
+	exit 1
+}
+
 # ======================================================================================================================================
 # Lectura de parametros configurables
 # ======================================================================================================================================
-
-# Salir si no se pasa ningun parametro.
-if [ $# -eq 0 ]; then
-	print_help
-	exit 1
-fi
 
 # Parametros pasados por consola con nombre concreto
 while [ $# -gt 0 ]; do
@@ -61,16 +61,14 @@ while [ $# -gt 0 ]; do
 			DEBUG=true
 			;;
 		*)
-			print_help
-			exit 1
+			err
 	esac
 	shift
 done
 
-# Salir si no se ha pasado como parametrio la ID del equipo dentro del sistema distribuido.
+# Salir si no se ha pasado como parametro la ID del equipo dentro del sistema distribuido.
 if [ ${#MY_ID} -lt 1 ]; then
-	print_help
-	exit 1
+	err
 fi
 
 # Valores por defecto para las variables.
@@ -98,50 +96,31 @@ if [ -d $WORKING_DIRECTORY/dbs ]; then
 fi
 mkdir $WORKING_DIRECTORY/dbs
 
-# Si existe el repo, hacer pull; si no, clonar.
-if [ -d "$WORKING_DIRECTORY/zookeeper" ]; then
-	cd $WORKING_DIRECTORY/zookeeper && git pull
-else
-	cd $WORKING_DIRECTORY && git clone https://github.com/revilla-92/zookeeper.git
+# Extraer tar.gz en el directorio zookeeper, si no existe ya.
+if [ ! -d $WORKING_DIRECTORY/zookeeper-3.4.10 ]; then
+	tar -zxvf ./zk/zookeeper-3.4.10.tar.gz -C $WORKING_DIRECTORY
 fi
 
-# Leer propiedades de conf/hosts.properties
-. $WORKING_DIRECTORY/zookeeper/conf/hosts.properties
-
-# Mover al directorio de trabajo.
-cd $WORKING_DIRECTORY
-
-# Extraer tar.gz en el directorio zookeeper.
-cp ./zookeeper/zk/zookeeper-3.4.10.tar.gz .
-tar -zxvf zookeeper-3.4.10.tar.gz
-rm zookeeper-3.4.10.tar.gz
-
-# Copiar librerías al directorio de trabajo.
-cp -r ./zookeeper/lib .
-
-# Copiar JAR al directorio de trabajo.
-cp ./zookeeper/pfinal.jar .
-
 # Copiar configuración al directorio de configuración de Zookeeper.
-cp -r ./zookeeper/conf/* ./zookeeper-3.4.10/conf
+cp ./conf/localhost_zoo.cfg $WORKING_DIRECTORY/zookeeper-3.4.10/conf
+
+# Leer propiedades de conf/hosts.properties.
+. ./conf/hosts.properties
 
 # Modificar directorio de datos en archivos de configuración mediante sed.
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST1"#"$HOST1_IP"#g {} +
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST2"#"$HOST2_IP"#g {} +
-find . -wholename ./zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST3"#"$HOST3_IP"#g {} +
+find $WORKING_DIRECTORY -wholename $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"WORKING_DIRECTORY"#"$WORKING_DIRECTORY"#g {} +
+find $WORKING_DIRECTORY -wholename $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST1"#"$HOST1_IP"#g {} +
+find $WORKING_DIRECTORY -wholename $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST2"#"$HOST2_IP"#g {} +
+find $WORKING_DIRECTORY -wholename $WORKING_DIRECTORY/zookeeper-3.4.10/conf/localhost_zoo.cfg -type f -exec sed -i s#"HOST3"#"$HOST3_IP"#g {} +
 
 # Crear archivos de descripción de los hosts en el directorio de datos.
-echo $MY_ID > ./z1/myid
-
-# Cambiar al directorio de zookeeper.
-cd ./zookeeper-3.4.10
+echo $MY_ID > $WORKING_DIRECTORY/z1/myid
 
 # Conceder permisos de ejecución a los binarios de Zookeeper, y de escritura al usuario root.
-chmod 755 ./bin/*.sh
+chmod 755 $WORKING_DIRECTORY/zookeeper-3.4.10/bin/*.sh
 
 # Exportar classpath.
-export CLASSPATH=$CLASSPATH:$WORKING_DIRECTORY/pfinal.jar:$CLASSPATH:$WORKING_DIRECTORY/lib/*
+export CLASSPATH=$CLASSPATH:$PWD/pfinal.jar:$CLASSPATH:$PWD/lib/*
 
 # ======================================================================================================================================
 # Copiar claves publicas de los participantes a ~/.ssh/authorized_keys
@@ -152,7 +131,7 @@ if [ -f ~/.ssh/authorized_keys ]; then
 	rm ~/.ssh/authorized_keys
 fi
 # Copiar authorized_keys
-cp $WORKING_DIRECTORY/zookeeper/conf/authorized_keys ~/.ssh
+cp ./conf/authorized_keys ~/.ssh
 # Modificar permisos de authorized_keys
 chmod 600 ~/.ssh/authorized_keys
 
