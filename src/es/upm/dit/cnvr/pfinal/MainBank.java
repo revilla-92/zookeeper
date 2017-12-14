@@ -9,6 +9,16 @@ public class MainBank {
 		
 	}
 	
+	public static void showLogo() {
+		System.out.println("██████╗  █████╗ ███╗   ██╗ █████╗ ██╗     ██████╗  █████╗ ███╗   ██╗██╗  ██╗");
+		System.out.println("██╔══██╗██╔══██╗████╗  ██║██╔══██╗██║     ██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝");
+		System.out.println("██║  ██║███████║██╔██╗ ██║███████║██║     ██████╔╝███████║██╔██╗ ██║█████╔╝ ");
+		System.out.println("██║  ██║██╔══██║██║╚██╗██║██╔══██║██║     ██╔══██╗██╔══██║██║╚██╗██║██╔═██╗ ");
+		System.out.println("██████╔╝██║  ██║██║ ╚████║██║  ██║███████╗██████╔╝██║  ██║██║ ╚████║██║  ██╗");
+		System.out.println("╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝");
+		System.out.println("");
+	}
+	
 	public boolean isInteger(String s) {
 	    try { 
 	        Integer.parseInt(s); 
@@ -21,6 +31,8 @@ public class MainBank {
 	}
 
 	public static void main(String[] args) throws IOException {
+		
+		showLogo();
 		
 		Scanner sc      = new Scanner(System.in);
 		boolean correct = false;
