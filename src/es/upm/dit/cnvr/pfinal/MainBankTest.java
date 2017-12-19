@@ -3,6 +3,7 @@ package es.upm.dit.cnvr.pfinal;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MainBankTest {
 	
@@ -10,8 +11,7 @@ public class MainBankTest {
 		
 	}
 	
-	public static void showLogo() {
-		System.out.println("██████╗  █████╗ ███╗   ██╗ █████╗ ██╗     ██████╗  █████╗ ███╗   ██╗██╗  ██╗");
+	public static void showLogo() {		System.out.println("██████╗  █████╗ ███╗   ██╗ █████╗ ██╗     ██████╗  █████╗ ███╗   ██╗██╗  ██╗");
 		System.out.println("██╔══██╗██╔══██╗████╗  ██║██╔══██╗██║     ██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝");
 		System.out.println("██║  ██║███████║██╔██╗ ██║███████║██║     ██████╔╝███████║██╔██╗ ██║█████╔╝ ");
 		System.out.println("██║  ██║██╔══██║██║╚██╗██║██╔══██║██║     ██╔══██╗██╔══██║██║╚██╗██║██╔═██╗ ");
@@ -20,6 +20,7 @@ public class MainBankTest {
 		System.out.println("");
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws IOException {
 		
 		showLogo();
@@ -29,6 +30,7 @@ public class MainBankTest {
 		
 		
 		List<Client> clientList = new ArrayList<Client>();
+		List<Account> accountList = new ArrayList<Account>();
 		
 		clientList.add(new Client("Christene Muncy", "82224465K"));
 		clientList.add(new Client("Darcel Dollar", "30820137S"));
@@ -133,6 +135,23 @@ public class MainBankTest {
 
 		for(Client a : clientList){
 			boolean cl = bank.createClient(a.getName(), a.getDNI());
+			try {
+				Thread.sleep(25);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		for(int i = 0; i < 300; i++){
+			IBAN nuevoIBAN = new IBAN();
+			Random rand = new Random();
+			int j = rand.nextInt(clientList.size());
+			bank.createAccount(nuevoIBAN.toString(), j, rand.nextInt(10000));
+			try {
+				Thread.sleep(25);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		
 	}
