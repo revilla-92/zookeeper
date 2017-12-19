@@ -11,23 +11,11 @@ public class MainBankTest {
 		
 	}
 	
-	public static void showLogo() {		System.out.println("██████╗  █████╗ ███╗   ██╗ █████╗ ██╗     ██████╗  █████╗ ███╗   ██╗██╗  ██╗");
-		System.out.println("██╔══██╗██╔══██╗████╗  ██║██╔══██╗██║     ██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝");
-		System.out.println("██║  ██║███████║██╔██╗ ██║███████║██║     ██████╔╝███████║██╔██╗ ██║█████╔╝ ");
-		System.out.println("██║  ██║██╔══██║██║╚██╗██║██╔══██║██║     ██╔══██╗██╔══██║██║╚██╗██║██╔═██╗ ");
-		System.out.println("██████╔╝██║  ██║██║ ╚████║██║  ██║███████╗██████╔╝██║  ██║██║ ╚████║██║  ██╗");
-		System.out.println("╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝");
-		System.out.println("");
-	}
-
 	@SuppressWarnings("unused")
 	public static void main(String[] args) throws IOException {
-		
-		showLogo();
-		
+				
 		// Creamos un banco.
 		Bank bank = new Bank(false, 3);
-		
 		
 		List<Client> clientList = new ArrayList<Client>();
 		List<Account> accountList = new ArrayList<Account>();
