@@ -160,5 +160,5 @@ echo " $WORKING_DIRECTORY/zookeeper-3.4.10/bin/zkCli.sh -server localhost:2181"
 # Instrucciones para arrancar
 line
 echo "Ejecutar el siguiente comando para levantar el servidor del sistema distribuido."
-echo " xterm -hold -T \"Host $MY_ID\" -e \"export CLASSPATH=\$CLASSPATH:$PWD/pfinal.jar:$PWD/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3\" &"
+echo " xterm -hold -T \"Host $MY_ID\" -geometry \"80x40\" -e \"export CLASSPATH=\$CLASSPATH:$PWD/pfinal.jar:$PWD/lib/* && java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank $DEBUG_DIRECTIVE --size=3\" &"
 line
