@@ -91,7 +91,7 @@ public class ClientDB implements Serializable {
 	
 	
 	public String dumpDB() {
-		String fileName = "/tmp/CNVR/dbs/clientDB";
+		String fileName = "/root/dbs/clientDB";
 		File dumpFile = new File(fileName);
 		
 		if(dumpFile.exists()) {
@@ -129,7 +129,7 @@ public class ClientDB implements Serializable {
 				
 				// Execute SCP
 				ExecuteShellComand obj = new ExecuteShellComand();
-				String command = "scp -o StrictHostKeyChecking=no " + leaderHostname + "@" + leaderIP + ":" + path + " /tmp/CNVR/dbs";
+				String command = "scp -o StrictHostKeyChecking=no " + leaderHostname + "@" + leaderIP + ":" + path + " /root/dbs";
 				String output = obj.executeCommand(command);
 				Logger.debug("Execution of: " + command + " resulted in: " + output);
 				

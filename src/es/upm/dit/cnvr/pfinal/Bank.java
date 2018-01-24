@@ -65,7 +65,7 @@ public class Bank implements Watcher {
 	// Comandos para relanzar un proceso en caso de caiga un proceso.
 	String[] orderedCommands = new String[] {
 		// 1. Export CLASSPATH
-		"export CLASSPATH=$CLASSPATH:/tmp/CNVR/pfinal.jar:$CLASSPATH:/tmp/CNVR/lib/*",
+		"export CLASSPATH=$CLASSPATH:/root/zookeeper_servers/pfinal.jar:/root/zookeeper_servers/lib/*",
 		// 2. Launch server
 		"java -Djava.net.preferIPv4Stack=true es.upm.dit.cnvr.pfinal.MainBank --size " + this.size
 	};
